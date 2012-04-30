@@ -1,4 +1,5 @@
 modLive
 =======
 
-Modify Live CD
+modLive Modifies Live CD of Ubuntu distribution.
+

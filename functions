@@ -1,0 +1,46 @@
+# shared functions
+
+function _getinfo {
+	id=`awk -F= '/DISTRIB_ID/ {print $2}' "$fsys/etc/lsb-release"`
+	release=`cut -d' ' -f2 $iso/.disk/info`
+	codename=`awk -F= '/DISTRIB_CODENAME/ {print $2}' "$fsys/etc/lsb-release"`
+	arch=`sed 's/.*Release \(.*\) (.*/\1/' $iso/.disk/info`
+	codefname=`cut -d'"' -f2 $iso/.disk/info`
+}
+
+function argpass {
+	if [ $# -gt 1 ]; then
+		echo $@ | cut -d' ' -f1 --complement;
+	fi
+}
+
+function _crop {
+	len=${#str}
+	ptr=$(($len-40))
+	if [ $ptr -gt 0 ]; then
+		echo -e "...${str:ptr:len}"
+	else
+		echo -e $str
+	fi
+}
+
+function _unmountISO { # error control for abnormal termination
+	for i in  `sed -n 's/.*loop0 \(.*\) iso.*/\1/p' /proc/mounts`; do
+		if [ $i = $mnt ]; then
+			echo -en "${h2}Unmount ISO from${cdef} "; str=$i; _crop
+			umount -lf "$i"
+			if [ $? != 0 ]; then
+				echo -e "${error}Unable to unmount $i. Try it manually${cdef}"
+				exit
+			fi
+			rmdir $mnt
+		fi
+	done
+}
+
+function _clean {
+	_unmountISO
+	echo -e "${h2}cleaning up${cdef}"
+		rm -rf "$wd/custom"
+}
+
